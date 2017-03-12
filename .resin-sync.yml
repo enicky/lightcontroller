@@ -1,0 +1,9 @@
+uuid: e837fed0074e4374b6fb3e48aa56672006910088103b06086493cca39bec75
+destination: /app
+port: 22
+before: echo Start Sync
+after: ls -la /app/ && chmod +x /app/src/start.sh && npm install &&  echo "Done Sync"
+ignore:
+  - .git
+  - node_modules/
+  - .tmp

@@ -1,0 +1,23 @@
+{
+  "configured": true,
+  "deviceId": "adc7273f-23ac-4f9f-8dc9-bb6d0dc4cfa4",
+  "authentication": {
+    "symmetricKey": {
+      "primaryKey": "qIjtLGNuVnpFP5vhZgp+42jBVGcbDw7FJtv87Lt8WHY=",
+      "secondaryKey": "zLTPUMT24MVhxZIu2BxSH1lffDhFJSen2p5xKxTYJ14="
+    },
+    "x509Thumprint": {
+      "primaryThumbprint": null,
+      "secondaryThumbprint": null
+    },
+    "x509Thumbprint": {
+      "primaryThumbprint": null,
+      "secondaryThumbprint": null
+    },
+    "SymmetricKey": {
+      "primaryKey": "qIjtLGNuVnpFP5vhZgp+42jBVGcbDw7FJtv87Lt8WHY=",
+      "secondaryKey": "zLTPUMT24MVhxZIu2BxSH1lffDhFJSen2p5xKxTYJ14="
+    }
+  },
+  "connectionString": "HostName=iot-nicky.azure-devices.net;DeviceId=adc7273f-23ac-4f9f-8dc9-bb6d0dc4cfa4;SharedAccessKey=qIjtLGNuVnpFP5vhZgp+42jBVGcbDw7FJtv87Lt8WHY="
+}
