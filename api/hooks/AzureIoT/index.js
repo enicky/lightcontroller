@@ -20,8 +20,8 @@ module.exports = function myAzureHook(sails) {
         // Runs automatically when the hook initializes
         initialize: function (cb) {
 
-            sails.log.debug('[AzureIotHook:initialize] Start init AzureHook');
-            var hook = this;
+          sails.log.debug('[AzureIotHook:initialize] Start init AzureHook');
+          var hook = this;
           sails.on('hook:orm:loaded', function() {
             sails.log.debug('[AzureIoTHook:initialize] orm loaded ... ');
             // You must trigger `cb` so sails can continue loading.
