@@ -122,6 +122,55 @@ module.exports = {
       }
     });
   },
+  /**
+   * Turn light on for a Hue Device
+   * @param req
+   * @param res
+   */
+  switchHueLight : function(req, res){
+    var that = this;
+    sails.log.verbose('[AzureIoTService:hueLightGetStatus] Received method call for method \'' + req.methodName + '\'');
+
+    // if there's a payload just do a default console log on it
+    if (!!(req.payload)) {
+      sails.log.verbose('[AzureIoTService:hueLightGetStatus] Payload: ' + req.payload);
+    }
+    let jsonObject = JSON.parse(req.payload);
+    var hueLampToGetStatusFrom = jsonObject.lampId;
+    var targetStatus = jsonObject.status;
+    HueService.switchLamp(hueLampToGetStatusFrom, targetStatus, function(){
+      sails.log.debug('[AzureIoTService:hueLightGetStatus] Turn lamp ' + hueLampToGetStatusFrom + ' on ? ' + targetStatus);
+      var toReturn = {
+        "success" : true
+      };
+      res.send(200, toReturn, function (err) {
+        if (!!err) {
+          sails.log.error('An error ocurred when sending a method response: ' + err.toString());
+        } else {
+          sails.log.verbose('Response to method \'' + req.methodName + '\' sent successfully.');
+        }
+      });
+    })
+
+  },
+  hueLightGetStatus : function(req, res){
+    var that = this;
+    sails.log.debug('[AzureIoTService:hueLightGetStatus] paylad : ', req.payload);
+    var hueLampToGetStatusFrom = JSON.parse(req.payload).lampId;
+    HueService.getLampStatus(hueLampToGetStatusFrom, function(err, status){
+      var toReturn = {
+        "success" : true,
+        "status" : status
+      };
+      res.send(200, toReturn, function(err){
+        if (!!err) {
+          sails.log.error('An error ocurred when sending a method response: ' + err.toString());
+        } else {
+          sails.log.verbose('Response to method \'' + req.methodName + '\' sent successfully.');
+        }
+      })
+    })
+  },
   initializeCallback : function (cb) {
     var that= this;
     sails.log.debug('[AzureIoTService:initializeCallback] client config for azure finished');
@@ -137,6 +186,8 @@ module.exports = {
           }
         });
         that.client.onDeviceMethod('switchLight', that.switchLight);
+        that.client.onDeviceMethod('HUE_LIGHT_SWITCH',that.switchHueLight);
+        that.client.onDeviceMethod('HUE_LIGHT_GET_STATUS', that.hueLightGetStatus);
         that.client.on('message', that.receivedMessage);
         if(cb) return cb();
       }
