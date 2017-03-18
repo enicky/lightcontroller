@@ -32,16 +32,20 @@ module.exports = {
   },
   registerDevices : function(bridge){
     var that = this;
-    sails.log.debug('[HueService.initialize] Found HueBridges : ', bridge);
+    sails.log.verbose('[HueService.initialize] Found HueBridges : ', bridge);
     async.each(bridge, that.handleBridge, function(err){
-      sails.log.debug('[HueDiscoveryService:registerDevices] Done registering bridges ... ');
+      sails.log.verbose('[HueDiscoveryService:registerDevices] Done registering bridges ... ');
     });
   },
   discoverHue : function(){
     var that = this;
-    sails.log.debug('[HueDiscoveryService:discoverHue] Searching ... ');
-    hue.nupnpSearch().then(that.registerDevices).done(function(){
-      sails.log.debug('[HueDiscoveryService:discoverHue] Done Searching ... ');
+    sails.log.verbose('[HueDiscoveryService:discoverHue] Searching ... ');
+    hue.nupnpSearch().then(that.registerDevices)
+      .catch(function(err){
+        sails.log.error('[HueDiscoveryService:discoverHue] Error search for hue ', err);
+      })
+      .done(function(){
+        sails.log.verbose('[HueDiscoveryService:discoverHue] Done Searching ... ');
     });
   },
   handleRegisterLight : function(lamp, bridge, cb){
