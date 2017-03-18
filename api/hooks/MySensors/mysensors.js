@@ -301,7 +301,10 @@ var MySensorNode = function(sails) {
 
             //console.log('internalid', internalid);
 
-
+            if(!that.initialized){
+              sails.log.error('[MySensors:handleMessage] not initialized yet ... ');
+              return;
+            }
             that.getDeviceInfo(radioId, childId, function(err, deviceInfo) {
                 //if (deviceInfo == null && (parseInt(messageType) != enums.SensorCommand.C_INTERNAL.value && parseInt(messageType) != enums.SensorCommand.C_PRESENTATION.value)) return;
                 if (splittedMessage.length == 6) payload = splittedMessage[5];
@@ -466,7 +469,7 @@ var MySensorNode = function(sails) {
                           //  sails.log.verbose('[MySensorNode:handleMessage] deviceInfo : ', deviceInfo);
                             if (deviceInfo.counter_received == null) deviceInfo.counter_received = 1;
                             else deviceInfo.counter_received = parseFloat(deviceInfo.counter_received) + 1;
-                            //TODO: is het nodig om dit te doen ? Moet die save gebeuren ? Kan die niet in ene weg mee gedaan worden op't einde ? 
+                            //TODO: is het nodig om dit te doen ? Moet die save gebeuren ? Kan die niet in ene weg mee gedaan worden op't einde ?
 
                             /*that.saveDeviceInfo(that, deviceInfo, internalid, function(err, result) {
                                 if (err) console.error('error saving deviceInfo (SET_VARIABLE) : ' + err);
@@ -663,7 +666,7 @@ MySensorNode.prototype.init = function(options) {
         that.handleMessage(completeMessage, that);
     });
 
-    
+
     this.initialized = true;
 };
 
@@ -800,10 +803,14 @@ MySensorNode.prototype.getDeviceInfo = function(radioId, childId, cb) {
     if (radioId == 0 && childId == 0) return cb(null, null);
     var internalId = radioId + '/' + childId;
     var that = this;
-    this.sails.models.sensor.findOne({ internalid :internalId}).exec(function(err, s){
-        if(err) sails.log('error', 'Error GetDeviceInfo : ', err);
-        if(s == null) return cb(null, null);
-        return cb(null, s);
-    });
+    if(this.initialized){
+      this.sails.models.sensor.findOne({ internalid :internalId}).exec(function(err, s){
+          if(err) sails.log('error', 'Error GetDeviceInfo : ', err);
+          if(s == null) return cb(null, null);
+          return cb(null, s);
+      });
+    }else{
+      sails.log.error('[MySensors:getDeviceInfo] no orm initialized ... ');
+    }
 };
 exports = module.exports = MySensorNode;
