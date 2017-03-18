@@ -139,6 +139,7 @@ module.exports = {
           let userId = hueUserObject.value;
           let api = new HueApi(bridge.host, userId);
           api.lightStatus(lampId).then(function(lampStatus){
+            sails.log.debug('[HueDiscoveryService:getLampStatus] status : ', lampStatus);
             return lampStatus
           }).done(function(lampStatus){
             let isOn = lampStatus.state.on;
