@@ -113,8 +113,8 @@ module.exports = {
     return cb();
   },
   switchLamp : function(lampId, targetStatus,cb){
-    HueLight.findOne({hueId : lampId}).exec(function(err, lamp){
-      sails.log.verbose('lampId : ', lampId, lamp, err);
+    HueLight.findOne({hueId : lampId.toString()}).exec(function(err, lamp){
+      sails.log.debug('lampId : ', lampId, lamp, err);
       HueBridge.findOne({_id: lamp.bridgeId}).exec(function(err, bridge){
         ConfigService.getValue('HUE_USER_ID', function(err, hueUserObject) {
           let userId = hueUserObject.value;
@@ -122,8 +122,9 @@ module.exports = {
           let state = lightState.create();
 
           let lightStatus = targetStatus ?state.on() : state.off();
-
+          console.log('set lamp stat ... ', lightStatus);
           api.setLightState(lampId, lightStatus).then(function(lampStatus){
+            console.log('lampsTTUS / 4', lampStatus);
             return lampStatus
           }).fail(function(err){
             sails.log.error('error setting status : ', err);
@@ -136,8 +137,8 @@ module.exports = {
     });
   },
   getLampStatus : function(lampId , cb){
-    HueLight.findOne({hueId : lampId}).exec(function(err, lamp){
-      sails.log.verbose('lampId : ', lampId, lamp, err);
+    HueLight.findOne({hueId : lampId.toString()}).exec(function(err, lamp){
+      sails.log.debug('lampId : ', lampId, lamp, err);
       HueBridge.findOne({_id: lamp.bridgeId}).exec(function(err, bridge){
         ConfigService.getValue('HUE_USER_ID', function(err, hueUserObject) {
           let userId = hueUserObject.value;
@@ -147,7 +148,19 @@ module.exports = {
             return lampStatus
           }).done(function(lampStatus){
             let isOn = lampStatus.state.on;
-            return cb(err, isOn);
+            let isReachable = lampStatus.state.reachable;
+            let toReturn = {
+              isOn : isOn,
+              isReachable : isReachable,
+              color : {
+                bri : lampStatus.state.bri,
+                hue : lampStatus.state.hue,
+                sat : lampStatus.state.sat,
+                xy : lampStatus.state.xy,
+                ct : lampStatus.state.ct
+              }
+            }
+            return cb(err, toReturn);
           })
         });
       })
