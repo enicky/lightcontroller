@@ -6,7 +6,7 @@ module.exports.mysensorconfig = {
     enabled: true,
     mqtt : {
         enabled : true,
-        server : '172.16.0.136',
-        port : 1883
+        server : process.env.MQTT_SERVER ? process.env.MQTT_SERVER :  '172.16.0.136',
+        port : process.env.MQTT_PORT ? process.env.MQTT_PORT : 1883
     }
 }

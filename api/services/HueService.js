@@ -38,11 +38,15 @@ module.exports = {
     })
   },
   getLampStatus : function(hueLampToGetStatusFrom, cb){
-    sails.log.verbose('[HueService:getLampStatus] id ; ', hueLampToGetStatusFrom);
+    sails.log.debug('[HueService:getLampStatus] id ; ', hueLampToGetStatusFrom);
     HueDiscoveryService.getLampStatus(hueLampToGetStatusFrom, cb);
   },
   switchLamp : function(hueLampToGetStatusFrom, targetStatus,cb){
     HueDiscoveryService.switchLamp(hueLampToGetStatusFrom, targetStatus, cb);
+  },
+
+  setWhiteColor : function(lampId, whiteColor, brightness, cb){
+    HueDiscoveryService.setWhiteColor(lampId, whiteColor, brightness, cb);
   },
   initialize : function(cb){
     var that = this;

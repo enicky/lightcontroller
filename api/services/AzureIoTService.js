@@ -34,6 +34,26 @@ module.exports = {
       }
     });
   },
+  setWhiteColor : function(req, res){
+    var that = this;
+    let jsonObject = JSON.parse(req.payload);
+    let hueId = jsonObject.lampId;
+    let whiteColor = jsonObject.whiteColor;
+    let brightness = jsonObject.brightness;
+
+    HueService.setWhiteColor(hueId, whiteColor, brightness, function(){
+      var toReturn = {
+        "success" : true
+      };
+      res.send(200, toReturn, function (err) {
+        if (!!err) {
+          sails.log.error('An error ocurred when sending a method response: ' + err.toString());
+        } else {
+          sails.log.verbose('Response to method \'' + req.methodName + '\' sent successfully.');
+        }
+      });
+    })
+  },
   receivedMessage: function (msg) {
     var that = this;
     sails.log.debug('[AzureIoTService:receivedMessage] Id: ' + msg.messageId + ' Body: ' + msg.data);
@@ -91,8 +111,9 @@ module.exports = {
               ConfigService.setValue('primaryKey', deviceInfo.authentication.symmetricKey.primaryKey, function(){
                 ConfigService.setValue('secondaryKey', deviceInfo.authentication.symmetricKey.secondaryKey, function(){
                   sails.log.debug('[AzureIoTService:initialize] Config Updated')
-                  that.connectionString = 'HostName=iot-nicky.azure-devices.net;DeviceId=' + deviceInfo.deviceId + ';SharedAccessKey='
+                  that.connectionString = 'HostName=' + process.env.IOT_HUB_CLIENT_SERVER + ';DeviceId=' + deviceInfo.deviceId + ';SharedAccessKey='
                     + deviceInfo.authentication.symmetricKey.primaryKey;
+                  sails.log.info('[AzureIoTService:initialize] connectionString : ', that.connectionString);
                   ConfigService.setValue('connectionString', that.connectionString, function(){
                     that.client = Client.fromConnectionString(that.connectionString, Protocol);
                     that.initializeCallback(function(){
@@ -153,6 +174,7 @@ module.exports = {
     })
 
   },
+
   hueLightGetStatus : function(req, res){
     var that = this;
     sails.log.debug('[AzureIoTService:hueLightGetStatus] paylad : ', req.payload);
@@ -188,9 +210,30 @@ module.exports = {
         that.client.onDeviceMethod('switchLight', that.switchLight);
         that.client.onDeviceMethod('HUE_LIGHT_SWITCH',that.switchHueLight);
         that.client.onDeviceMethod('HUE_LIGHT_GET_STATUS', that.hueLightGetStatus);
+        that.client.onDeviceMethod('LIGHTS_GET_ALL', that.getAllLightDescriptions);
+        that.client.onDeviceMethod('HUE_LIGHT_SET_WHITE', that.setWhiteColor);
         that.client.on('message', that.receivedMessage);
         if(cb) return cb();
       }
+    })
+  },
+
+  getAllLightDescriptions : function(req, res){
+    var that = this;
+    sails.log.debug('[AzureIoTService:hueLightGetStatus] paylad : ', req.payload);
+    var hueLampToGetStatusFrom = JSON.parse(req.payload).lampId;
+    HueService.getLampStatus(hueLampToGetStatusFrom, function(err, status){
+      var toReturn = {
+        "success" : true,
+        "status" : status
+      };
+      res.send(200, toReturn, function(err){
+        if (!!err) {
+          sails.log.error('An error ocurred when sending a method response: ' + err.toString());
+        } else {
+          sails.log.verbose('Response to method \'' + req.methodName + '\' sent successfully.');
+        }
+      })
     })
   }
 }
