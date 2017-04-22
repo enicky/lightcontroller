@@ -104,6 +104,7 @@ module.exports = {
     var that = this;
 
     ConfigService.getValue('HUE_USER_ID', function(err, hueUserObject){
+      
       if(hueUserObject == null) return cb();
       let userId = hueUserObject.value;
       let api = new HueApi(bridge.host, userId);

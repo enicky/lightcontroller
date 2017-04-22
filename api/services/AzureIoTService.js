@@ -12,7 +12,7 @@ module.exports = {
   client: null,
   switchLight: function (req, res) {
     var that = this;
-    sails.log.verbose('[AzureIoTService:switchLight] Received method call for method \'' + req.methodName + '\'');
+    sails.log.debug('[AzureIoTService:switchLight] Received method call for method \'' + req.methodName + '\'');
 
     // if there's a payload just do a default console log on it
     if (!!(req.payload)) {
@@ -150,13 +150,14 @@ module.exports = {
    */
   switchHueLight : function(req, res){
     var that = this;
-    sails.log.verbose('[AzureIoTService:hueLightGetStatus] Received method call for method \'' + req.methodName + '\'');
+    sails.log.info('[AzureIoTService:hueLightGetStatus] Received method call for method \'' + req.methodName + '\'');
 
     // if there's a payload just do a default console log on it
     if (!!(req.payload)) {
-      sails.log.verbose('[AzureIoTService:hueLightGetStatus] Payload: ' + req.payload);
+      sails.log.info('[AzureIoTService:hueLightGetStatus] Payload: ' + req.payload);
     }
-    let jsonObject = JSON.parse(req.payload);
+
+    let jsonObject = req.payload;// JSON.parse(req.payload);
     var hueLampToGetStatusFrom = jsonObject.lampId;
     var targetStatus = jsonObject.status;
     HueService.switchLamp(hueLampToGetStatusFrom, targetStatus, function(){
@@ -178,7 +179,7 @@ module.exports = {
   hueLightGetStatus : function(req, res){
     var that = this;
     sails.log.debug('[AzureIoTService:hueLightGetStatus] paylad : ', req.payload);
-    var hueLampToGetStatusFrom = JSON.parse(req.payload).lampId;
+    var hueLampToGetStatusFrom = req.payload.lampId;
     HueService.getLampStatus(hueLampToGetStatusFrom, function(err, status){
       var toReturn = {
         "success" : true,
@@ -213,8 +214,25 @@ module.exports = {
         that.client.onDeviceMethod('LIGHTS_GET_ALL', that.getAllLightDescriptions);
         that.client.onDeviceMethod('HUE_LIGHT_SET_WHITE', that.setWhiteColor);
         that.client.on('message', that.receivedMessage);
-        if(cb) return cb();
+        ConfigService.getValue('deviceId', function(err, val){
+          that.registerDeviceInAzure(val.value, function(){
+            if(cb) return cb();
+          })
+        })
+
+
+
       }
+    })
+  },
+  registerDeviceInAzure : function(id, cb){
+    var rest = require('restler');
+    var targetUrl = 'http://luxopusweb20170414071435.azurewebsites.net/api/devices/AutoRegisterDevice/' + id;
+    sails.log.debug('[AzureIoTService:registerDeviceInAzure] targetUrl : ', targetUrl);
+    rest.get(targetUrl).once('complete', function(data, response){
+      sails.log.info('[AzureIoTService:registerDeviceInAzure] => data : ', response.raw.toString('utf8'));
+      //sails.log.info('[Reading:afterCreate] => response : ', response);
+      return cb();
     })
   },
 
@@ -231,7 +249,7 @@ module.exports = {
         if (!!err) {
           sails.log.error('An error ocurred when sending a method response: ' + err.toString());
         } else {
-          sails.log.verbose('Response to method \'' + req.methodName + '\' sent successfully.');
+          sails.log.debug('Response to method \'' + req.methodName + '\' sent successfully.');
         }
       })
     })
